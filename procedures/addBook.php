@@ -7,19 +7,7 @@ $bookDescription = request()->get('description');
 
 try {
   $newBook = addBook($bookTitle, $bookDescription);
-  $response = \Symfony\Component\HttpFoundation\Response::create(
-    null,
-    \Symfony\Component\HttpFoundation\Response::HTTP_FOUND,
-    ['Location'=>'/books.php']
-  );
-  $response->send();
-  exit;
+  redirect('/books.php');
 } catch (\Exception $e) {
-  $response = \Symfony\Component\HttpFoundation\Response::create(
-    null,
-    \Symfony\Component\HttpFoundation\Response::HTTP_FOUND,
-    ['Location'=>'/add.php']
-  );
-  $response->send();
-  exit;
+  redirect('/add.php');
 }
