@@ -5,10 +5,12 @@ require __DIR__.'/../inc/bootstrap.php';
 $user = findUserByEmail(request()->get('email'));
 
 if (empty($user)) {
+  $session->getFlashBag()->add('error', 'Email address not recognized');
   redirect('/login.php');
 }
 
 if (!password_verify(request()->get('password'), $user['password'])) {
+  $session->getFlashBag()->add('error', 'Incorrect password. Please try again');
   redirect('/login.php');
 }
 

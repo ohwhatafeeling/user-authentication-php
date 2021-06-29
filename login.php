@@ -8,7 +8,10 @@ require_once __DIR__ . '/inc/nav.php';
     <div class="well col-sm-6 col-sm-offset-3">
         <form class="form-signin" method="post" action="/procedures/doLogin.php">
             <h2 class="form-signin-heading">Please sign in</h2>
-            <?php // print display_errors(); ?>
+            <?php
+            echo display_errors();
+            echo display_success(); 
+            ?>
             <label for="inputEmail" class="sr-only">Email address</label>
             <input type="email" id="inputEmail" name="email" class="form-control" placeholder="Email address" required autofocus>
             <br>

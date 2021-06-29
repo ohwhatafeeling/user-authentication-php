@@ -9,7 +9,9 @@ $bookDescription = request()->get('description');
 
 try {
   $newBook = updateBook($bookId, $bookTitle, $bookDescription);
+  $session->getFlashBag()->add('success', 'Book updated');
   redirect('/books.php');
 } catch (\Exception $e) {
+  $session->getFlashBag()->add('error', 'Unable to update book');
   redirect('/edit.php?bookId='.$bookId);
 }

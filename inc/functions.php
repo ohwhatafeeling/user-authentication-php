@@ -9,6 +9,7 @@ function request() {
 
 function addBook($title, $description) {
   global $db;
+  global $session;
   $ownerId = 0;
 
   try {
@@ -21,6 +22,7 @@ function addBook($title, $description) {
   } catch (\Exception $e) {
     throw $e;
   }
+
 }
 
 function updateBook($bookId, $title, $description) {
@@ -165,4 +167,38 @@ function requireAuth() {
     $accessToken = new \Symfony\Component\HttpFoundation\Cookie("access_token", "Expired", time() - 3600, '/', getenv('COOKIE_DOMAIN'));
     redirect('/login.php', ['cookies' => [$accessToken]]);
   }
+}
+
+function display_errors() {
+  global $session;
+
+  if (!$session->getFlashBag()->has('error')) {
+    return;
+  }
+
+  $messages = $session->getFlashBag()->get('error');
+
+  $response = '<div class="alert alert-danger alert-dismissable">';
+  foreach ($messages as $message) {
+    $response .= "{$message}<br />";
+  }
+  $response .= '</div>';
+  return $response;
+}
+
+function display_success() {
+  global $session;
+
+  if (!$session->getFlashBag()->has('success')) {
+    return;
+  }
+
+  $messages = $session->getFlashBag()->get('success');
+
+  $response = '<div class="alert alert-success alert-dismissable">';
+  foreach ($messages as $message) {
+    $response .= "{$message}<br />";
+  }
+  $response .= '</div>';
+  return $response;
 }
