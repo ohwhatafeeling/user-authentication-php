@@ -1,6 +1,7 @@
 <?php
 
 require __DIR__.'/../inc/bootstrap.php';
+requireAuth();
 
 $vote = request()->get('vote');
 $bookId = request()->get('bookId');

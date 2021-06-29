@@ -38,6 +38,20 @@ function updateBook($bookId, $title, $description) {
   }
 }
 
+function deleteBook($bookId) {
+  global $db;
+
+  try {
+    $query = 'DELETE FROM books WHERE id = :bookId';
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':bookId', $bookId);
+    $stmt->execute();
+    return true;
+  } catch (\Exception $e) {
+    return false;
+  }
+}
+
 function getAllBooks() {
   global $db;
 
@@ -85,12 +99,70 @@ function vote($bookId, $score) {
   }
 }
 
-function redirect($path) {
+function redirect($path, $extra =[]) {
   $response = \Symfony\Component\HttpFoundation\Response::create(
     null,
     \Symfony\Component\HttpFoundation\Response::HTTP_FOUND,
     ['Location' => $path]
   );
+  if (key_exists('cookies', $extra)) {
+    foreach ($extra['cookies'] as $cookie) {
+      $response->headers->setCookie($cookie);
+    }
+  }
   $response->send();
   exit;
+}
+
+function findUserByEmail($email) {
+  global $db;
+
+  try {
+    $query = 'SELECT * FROM users WHERE email = :email';
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':email', $email);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+  } catch (\Exception $e) {
+    throw $e;
+  }
+}
+
+function createUser($email, $password) {
+  global $db;
+
+  try {
+    $query = 'INSERT INTO users (email, password, role_id) VALUES (:email, :password, 2)';
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':email', $email);
+    $stmt->bindParam(':password', $password);
+    $stmt->execute();
+    return findUserByEmail($email);
+  } catch (\Exception $e) {
+    throw $e;
+  }
+}
+
+function isAuthenticated() {
+  if (!request()->cookies->has('access_token')) {
+    return false;
+  }
+  try {
+    \Firebase\JWT\JWT::$leeway = 1;
+    \Firebase\JWT\JWT::decode(
+      request()->cookies->get('access_token'),
+      getenv('SECRET_KEY'),
+      ['HS256']
+    );
+    return true;
+  } catch (\Exception $e) {
+    return false;
+  }
+}
+
+function requireAuth() {
+  if (!isAuthenticated()) {
+    $accessToken = new \Symfony\Component\HttpFoundation\Cookie("access_token", "Expired", time() - 3600, '/', getenv('COOKIE_DOMAIN'));
+    redirect('/login.php', ['cookies' => [$accessToken]]);
+  }
 }
