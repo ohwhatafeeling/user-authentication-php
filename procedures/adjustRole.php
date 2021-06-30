@@ -1,6 +1,6 @@
 <?php
-
 require __DIR__.'/../inc/bootstrap.php';
+requireAdmin();
 
 $userId = request()->get('userId');
 $role = request()->get('role');

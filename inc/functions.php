@@ -255,6 +255,8 @@ function requireAuth() {
 }
 
 function requireAdmin() {
+  global $session;
+
   if (!isAuthenticated()) {
     $accessToken = new \Symfony\Component\HttpFoundation\Cookie("access_token", "Expired", time() - 3600, '/', getenv('COOKIE_DOMAIN'));
     redirect('/login.php', ['cookies' => [$accessToken]]);
@@ -282,7 +284,7 @@ function isAdmin() {
   return (boolean)$isAdmin;
 }
 
-function isOwner($OwnerId) {
+function isOwner($ownerId) {
   if (!isAuthenticated()) {
     return false;
   }

@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/inc/bootstrap.php';
-requireAuth();
+requireAdmin();
 require_once __DIR__ . '/inc/head.php';
 require_once __DIR__ . '/inc/nav.php';
 ?>
@@ -27,10 +27,12 @@ require_once __DIR__ . '/inc/nav.php';
                 <td><?php echo $user['email']; ?></td>
                 <td><?php echo $user['created_at']; ?></td>
                 <td>
-                <?php if($user['role_id'] == 1) : ?>
-                <a href="/procedures/adjustRole.php?role=demote&userId=<?php echo $user['id']; ?>" class="bt btn-xs btn-warning">Demote from admin</a>
-                <?php elseif($user['role_id'] == 2) : ?>
-                <a href="/procedures/adjustRole.php?role=promote&userId=<?php echo $user['id']; ?>" class="bt btn-xs btn-success">Promote to admin</a>
+                <?php if(!isOwner($user['id'])) : ?>
+                  <?php if($user['role_id'] == 1) : ?>
+                    <a href="/procedures/adjustRole.php?role=demote&userId=<?php echo $user['id']; ?>" class="bt btn-xs btn-warning">Demote from admin</a>
+                  <?php elseif($user['role_id'] == 2) : ?>
+                    <a href="/procedures/adjustRole.php?role=promote&userId=<?php echo $user['id']; ?>" class="bt btn-xs btn-success">Promote to admin</a>
+                  <?php endif; ?>
                 <?php endif; ?>
                 </td>
               </tr>

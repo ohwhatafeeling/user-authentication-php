@@ -8,6 +8,7 @@ require_once __DIR__ . '/inc/nav.php';
         <h2>Book List</h2>
 
         <?php
+        echo display_errors();
         echo display_success();
         foreach (getAllBooks() as $book) {
           include __DIR__.'/inc/book.php';
