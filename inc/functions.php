@@ -116,6 +116,19 @@ function redirect($path, $extra =[]) {
   exit;
 }
 
+function getAllUsers() {
+  global $db;
+
+  try {
+    $query = 'SELECT * FROM users';
+    $stmt = $db->prepare($query);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+  } catch (\Exception $e) {
+    throw $e;
+  }
+}
+
 function findUserByEmail($email) {
   global $db;
 
@@ -181,6 +194,32 @@ function updatePassword($password, $userId) {
   return true;
 }
 
+function promote($userId) {
+  global $db;
+
+  try {
+    $query = 'UPDATE users SET role_id=1 WHERE id=:userId';
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':userId', $userId);
+    $stmt->execute();
+  } catch (\Exception $e) {
+    throw $e;
+  }
+}
+
+function demote($userId) {
+  global $db;
+
+  try {
+    $query = 'UPDATE users SET role_id=2 WHERE id=:userId';
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':userId', $userId);
+    $stmt->execute();
+  } catch (\Exception $e) {
+    throw $e;
+  }
+}
+
 function decodeJwt($prop = null) {
   \Firebase\JWT\JWT::$leeway = 1;
   $jwt = \Firebase\JWT\JWT::decode(
@@ -213,6 +252,46 @@ function requireAuth() {
     $accessToken = new \Symfony\Component\HttpFoundation\Cookie("access_token", "Expired", time() - 3600, '/', getenv('COOKIE_DOMAIN'));
     redirect('/login.php', ['cookies' => [$accessToken]]);
   }
+}
+
+function requireAdmin() {
+  if (!isAuthenticated()) {
+    $accessToken = new \Symfony\Component\HttpFoundation\Cookie("access_token", "Expired", time() - 3600, '/', getenv('COOKIE_DOMAIN'));
+    redirect('/login.php', ['cookies' => [$accessToken]]);
+  }
+  try {
+    if (!decodeJwt('is_admin')) {
+      $session->getFlashBag()->add('error', 'Sorry, you do not have access. Only Admin allowed.');
+      redirect('/');
+    }
+  } catch (\Exception $e) {
+    $accessToken = new \Symfony\Component\HttpFoundation\Cookie("access_token", "Expired", time() - 3600, '/', getenv('COOKIE_DOMAIN'));
+    redirect('/login.php', ['cookies' => [$accessToken]]);
+  }
+}
+
+function isAdmin() {
+  if (!isAuthenticated()) {
+    return false;
+  }
+  try {
+    $isAdmin = decodeJwt('is_admin');
+  } catch (\Exception $e) {
+    return false;
+  }
+  return (boolean)$isAdmin;
+}
+
+function isOwner($OwnerId) {
+  if (!isAuthenticated()) {
+    return false;
+  }
+  try {
+    $userId = decodeJwt('sub');
+  } catch (\Exception $e) {
+    return false;
+  }
+  return $ownerId == $userId;
 }
 
 function display_errors() {
