@@ -57,13 +57,21 @@ function deleteBook($bookId) {
 function getAllBooks() {
   global $db;
 
+  $userId = 0;
+
+  if (isAuthenticated()) {
+    $userId = decodeJwt('sub');
+  }
+
   try {
-    $query = 'SELECT books.*, SUM(votes.value) AS score
-    FROM books
-    LEFT JOIN votes ON (books.id=votes.book_id)
-    GROUP BY books.id
-    ORDER BY score DESC';
+    $query = 'SELECT books.*, SUM(votes.value) AS score,'
+      . ' (SELECT value FROM votes WHERE votes.book_id=books.id AND votes.user_id=:userId) AS myVote'
+      . ' FROM books'
+      . ' LEFT JOIN votes ON (books.id=votes.book_id)'
+      . ' GROUP BY books.id'
+      . ' ORDER BY score DESC';
     $stmt = $db->prepare($query);
+    $stmt->bindParam(':userId', $userId);
     $stmt->execute();
     return $stmt->fetchAll();
   } catch (\Exception $e) {
@@ -87,7 +95,7 @@ function getBook($bookId) {
 
 function vote($bookId, $score) {
   global $db;
-  $userId = 0;
+  $userId = decodeJwt('sub');
 
   try {
     $query = 'INSERT INTO votes (book_id, user_id, value) VALUES (:bookId, :userId, :score)';
@@ -98,6 +106,22 @@ function vote($bookId, $score) {
     $stmt->execute();
   } catch (\Exception $e) {
     die('Something happen with the voting. Please try again');
+  }
+}
+
+function clearVote($bookId) {
+  global $db;
+  $userId = decodeJwt('sub');
+
+  try {
+    $query = 'DELETE FROM votes WHERE book_id=:bookId AND user_id=:userId';
+    $stmt = $db->prepare($query);
+    $stmt->bindParam(':bookId', $bookId);
+    $stmt->bindParam(':userId', $userId);
+    $stmt->execute();
+    return $stmt->rowCount();
+  } catch (\Exception $e) {
+    throw $e;
   }
 }
 
