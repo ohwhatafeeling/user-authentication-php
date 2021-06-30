@@ -23,6 +23,7 @@
                 <li><a href="/login.php">Login</a></li>
                 <li><a href="/register.php">Register</a></li>
                 <?php else : ?>
+                <li><a href="/account.php">My Account</a></li>
                 <li><a href="/procedures/doLogout.php">Logout</a></li>
                 <?php endif ?>
             </ul>
